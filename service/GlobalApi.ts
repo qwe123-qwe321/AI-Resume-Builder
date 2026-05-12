@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
-const API_KEY: string = import.meta.env.VITE_STRAPI_API_KEY;
+const API_KEY: string = import.meta.env.VITE_STRAPI_API_KEY || '';
+const BASE_URL: string = import.meta.env.VITE_BASE_URL || '';
 const axiosClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL.replace(/\/$/, '') + '/api/',
+  baseURL: (BASE_URL ? BASE_URL.replace(/\/$/, '') : '') + '/api/',
   headers: {
     "Content-Type": "application/json",
     Authorization: `Bearer ${API_KEY}`,

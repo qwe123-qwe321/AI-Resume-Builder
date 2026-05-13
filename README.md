@@ -1,11 +1,254 @@
-![React AI Resume Builder](https://github.com/rrs301/AI-Resume-Builder/assets/20216436/0a78231c-754e-4f2e-94b0-ae9474cbf613)
+# AI Resume Builder
 
-# React + Vite
+> AI 驱动的智能简历构建器 — 输入职位，一键生成专业简历
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 项目简介
 
-Currently, two official plugins are available:
+**AI Resume Builder** 是一款基于 React + TypeScript 的全栈 AI 简历构建工具。用户只需填写基本信息，AI 即可自动生成高质量的个人摘要和工作描述。项目采用双栏实时预览布局，所见即所得，并支持多主题配色、PDF 导出和链接分享，帮助求职者快速打造专业简历。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-"# AI-Resume-Builder-Strapi-Builder" 
+## 功能介绍
+
+### 1. AI 智能生成
+- **AI 摘要生成**：输入职位名称，DeepSeek 大模型自动生成 Fresher / Mid Level / Senior Level 三种经验级别的个人摘要，用户可一键选用
+- **AI 工作描述生成**：根据职位名称，AI 自动生成 5-7 条专业的工作职责要点，直接填入富文本编辑器
+
+### 2. 简历编辑（5 步表单）
+- **个人信息**：姓名、职位、联系方式等基础信息
+- **个人摘要**：支持 AI 生成或手动编写
+- **工作经历**：多段经历管理，富文本编辑器支持，AI 辅助生成描述
+- **教育背景**：学校、学位、专业、时间线
+- **专业技能**：技能名称 + 评分（1-5 星），可视化展示
+
+### 3. 实时预览
+- 左侧编辑、右侧实时预览的双栏布局
+- 15 种预设主题颜色，一键切换，即时生效
+- 所有表单修改即时反映在预览区
+
+### 4. 简历管理
+- **仪表盘**：卡片网格展示所有简历，支持编辑 / 查看 / 下载 / 删除
+- **PDF 导出**：一键打印为 PDF，打印样式精心优化
+- **链接分享**：支持 Web Share API 分享，或复制链接
+
+### 5. 用户认证
+- 基于 Clerk 的认证系统，支持邮箱 / Google / GitHub 登录
+- 用户数据隔离，每人仅管理自己的简历
+
+## 技术栈
+
+| 类别 | 技术 |
+|------|------|
+| **前端框架** | React 18 + TypeScript 5 |
+| **构建工具** | Vite 8 |
+| **路由** | react-router-dom v6 |
+| **样式方案** | Tailwind CSS v4 + shadcn/ui |
+| **AI 模型** | DeepSeek Chat API |
+| **后端 CMS** | Strapi (Headless CMS) |
+| **认证** | Clerk |
+| **图标** | lucide-react |
+| **富文本** | react-simple-wysiwyg |
+| **PDF 导出** | 浏览器原生打印 (window.print) |
+| **部署** | Vercel |
+
+## 项目架构
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Client (Vite)                        │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  │
+│  │  路由层   │  │  认证层   │  │    全局上下文          │  │
+│  │ react-   │  │  Clerk   │  │  ResumeInfoContext    │  │
+│  │ router   │  │          │  │  (简历数据状态管理)     │  │
+│  └────┬─────┘  └────┬─────┘  └──────────┬───────────┘  │
+│       │             │                   │              │
+│  ┌────▼─────────────▼───────────────────▼───────────┐  │
+│  │                  页面层                           │  │
+│  │  Home → Dashboard → EditResume → ViewResume      │  │
+│  └────────────────────┬────────────────────────────┘  │
+│                       │                               │
+│  ┌────────────────────▼────────────────────────────┐  │
+│  │                  组件层                          │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌────────────────┐   │  │
+│  │  │ 表单组件  │ │ 预览组件  │ │  AI 生成组件   │   │  │
+│  │  │ 5步表单   │ │ 实时预览  │ │  DeepSeek API  │   │  │
+│  │  └──────────┘ └──────────┘ └────────────────┘   │  │
+│  └────────────────────┬────────────────────────────┘  │
+│                       │                               │
+│  ┌────────────────────▼────────────────────────────┐  │
+│  │                  服务层                          │  │
+│  │  ┌──────────────────┐  ┌────────────────────┐   │  │
+│  │  │  GlobalApi.ts    │  │  AIModal.ts        │   │  │
+│  │  │  Strapi REST API │  │  DeepSeek Chat     │   │  │
+│  │  └──────────────────┘  └────────────────────┘   │  │
+│  └────────────────────┬────────────────────────────┘  │
+└───────────────────────┼──────────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────────┐
+│                   Backend (Strapi)                    │
+│                   REST API / PostgreSQL               │
+└──────────────────────────────────────────────────────┘
+```
+
+### 数据流
+
+```
+用户操作 → React 表单组件
+         → ResumeInfoContext (全局状态)
+             → 实时预览组件 (即时渲染)
+             → Strapi API (自动持久化)
+```
+
+## 核心亮点
+
+### AI 赋能简历撰写
+- 集成 **DeepSeek Chat 大模型**，根据职位名称智能生成高质量简历内容
+- 摘要生成提供 **3 个经验级别**（初级 / 中级 / 高级），满足不同阶段求职者需求
+- 工作描述生成 **5-7 条专业要点**，格式规范、可直接使用
+
+### 所见即所得的编辑体验
+- **双栏实时预览**：左侧编辑、右侧同步渲染，零延迟反馈
+- **15 种主题配色**：预设专业配色方案，一键切换，简历风格随心定制
+- **富文本编辑器**：工作描述支持加粗、列表等格式，排版更灵活
+
+### 企业级工程实践
+- **TypeScript 严格模式**：全类型安全，代码质量有保障
+- **shadcn/ui 组件体系**：基于 Radix UI 原语，可访问性强，样式可定制
+- **Tailwind CSS v4**：最新的 Utility-First 方案，开发效率高
+- **模块化架构**：服务层、上下文、组件层职责清晰，易于扩展
+
+### 流畅的用户体验
+- **Clerk 认证**：开箱即用的社交登录，降低使用门槛
+- **PDF 一键导出**：打印样式精心优化，隐藏无关 UI，输出专业 PDF
+- **链接分享**：支持 Web Share API，方便在移动端分享简历
+
+## 技术难点与解决方案
+
+### 1. AI 响应格式不稳定
+**难点**：大模型返回的内容可能包含 markdown 代码块标记、多余文本，导致 JSON 解析失败或 HTML 格式错乱。
+
+**解决方案**：在 `Summery.tsx` 和 `RichTextEditor.tsx` 中实现了多层清理逻辑 — 提取 JSON / HTML 片段、移除 markdown 标记、正则修复截断内容，确保 AI 输出可靠可用。
+
+### 2. 实时预览性能优化
+**难点**：表单输入频繁触发 Context 更新，导致预览区不必要的重渲染。
+
+**解决方案**：利用 React Context 的特性，将表单数据与预览组件解耦，预览组件仅在依赖数据变化时重新渲染，避免性能浪费。
+
+### 3. 富文本编辑器与 AI 内容集成
+**难点**：AI 生成的 HTML 内容需要正确渲染到富文本编辑器中，同时保持编辑器的后续可编辑性。
+
+**解决方案**：使用 `react-simple-wysiwyg` 的 `setContent` API 注入 AI 生成的 HTML，并在注入前进行 HTML 清理和格式化，确保内容兼容。
+
+### 4. 打印样式适配
+**难点**：浏览器原生打印需要隐藏导航栏、操作按钮等 UI 元素，同时保持简历内容的排版美观。
+
+**解决方案**：在 `index.css` 中定义 `@media print` 样式，使用 `#no-print` / `#print-area` 的 ID 选择器精确控制打印内容的显示与隐藏。
+
+## 安装与运行
+
+### 环境要求
+
+- Node.js >= 18
+- pnpm >= 8
+
+### 安装步骤
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/your-username/AI-Resume-Builder.git
+cd AI-Resume-Builder
+
+# 2. 安装依赖
+pnpm install
+
+# 3. 配置环境变量
+# 复制 .env.example 为 .env，填写以下配置：
+# - VITE_CLERK_PUBLISHABLE_KEY: Clerk 公钥
+# - VITE_DEEPSEEK_API_KEY: DeepSeek API 密钥
+# - VITE_STRAPI_URL: Strapi 后端地址
+# - VITE_STRAPI_TOKEN: Strapi API Token
+
+# 4. 启动开发服务器
+pnpm dev
+```
+
+### 后端部署（Strapi）
+
+本项目需要配合 Strapi CMS 后端使用，请参考 [Strapi 官方文档](https://docs.strapi.io) 部署后端服务，并创建 `user-resumes` 内容类型。
+
+## 使用说明
+
+1. **注册 / 登录**：访问首页，点击 "Get Started" 完成注册
+2. **创建简历**：在 Dashboard 点击 "Add New Resume"，输入标题
+3. **编辑内容**：按步骤填写个人信息、摘要、经历、教育、技能
+4. **AI 生成**：在摘要或工作描述区域，点击 AI 按钮自动生成内容
+5. **选择主题**：在主题色面板选择喜欢的配色
+6. **预览与导出**：完成编辑后，点击 "View" 查看完整简历，点击 "Download" 导出 PDF
+7. **分享**：在查看页面点击分享按钮，通过链接分享给他人
+
+## API
+
+### DeepSeek AI API
+
+```typescript
+// 生成个人摘要
+POST https://api.deepseek.com/v1/chat/completions
+{
+  "model": "deepseek-chat",
+  "messages": [
+    { "role": "system", "content": "你是一个专业的简历撰写助手..." },
+    { "role": "user", "content": "请为 [职位名称] 生成 3 个不同经验级别的摘要" }
+  ]
+}
+```
+
+### Strapi REST API
+
+```typescript
+// 获取用户简历列表
+GET {{strapi_url}}/api/user-resumes?filters[userEmail][$eq]={{email}}
+
+// 创建简历
+POST {{strapi_url}}/api/user-resumes
+
+// 更新简历
+PUT {{strapi_url}}/api/user-resumes/{{id}}
+
+// 删除简历
+DELETE {{strapi_url}}/api/user-resumes/{{id}}
+```
+
+## 项目截图
+
+<!-- TODO: 添加项目截图 -->
+
+| 页面 | 截图 |
+|------|------|
+| 首页 | <!-- 截图链接 --> |
+| 简历编辑 | <!-- 截图链接 --> |
+| 实时预览 | <!-- 截图链接 --> |
+| AI 生成 | <!-- 截图链接 --> |
+| 简历查看 | <!-- 截图链接 --> |
+
+## 后续优化方向
+
+- [ ] **更多 AI 模型支持**：接入 GPT-4o、Claude 等模型，用户可自由选择
+- [ ] **简历模板系统**：提供多套专业模板，支持一键切换
+- [ ] **多语言支持**：支持中英文简历生成与展示
+- [ ] **ATS 优化**：分析简历的 ATS（ Applicant Tracking System）兼容性并给出优化建议
+- [ ] **简历评分**：AI 自动评分并提供改进建议
+- [ ] **批量导出**：支持批量导出为 PDF / Word / JSON 格式
+- [ ] **拖拽排序**：工作经历、技能等模块支持拖拽调整顺序
+- [ ] **暗色模式**：支持深色主题
+- [ ] **离线支持**：使用 Service Worker 实现离线编辑
+- [ ] **单元测试**：增加 Vitest + React Testing Library 测试覆盖
+
+## 作者信息
+
+- **作者**：[QWE123-QWE321](https://github.com/qwe123-qwe321)
+- **邮箱**：yjyjjy5201314@gmail.com
+- **GitHub**：[https://github.com/qwe123-qwe321](https://github.com/qwe123-qwe321)
+- **项目地址**：[https://github.com/qwe123-qwe321/AI-Resume-Builder](https://github.com/qwe123-qwe321/AI-Resume-Builder)
+
+---
+
+如果这个项目对你有帮助，欢迎 ⭐ Star 和 Fork！
